@@ -1,14 +1,39 @@
-import os
+# import multiprocessing, time
 
-catalogmaindir = "img/catalog"
-catalogdirs = [os.path.join(catalogmaindir, f) for f in os.listdir(catalogmaindir)]
-catalogimg = dict()
-for catalogdir in catalogdirs:
-    print(catalogdir.split(os.sep)[-1])
-    catalogimg[catalogdir.split(os.sep)[-1]] = [os.path.join(catalogdir, f) for f in os.listdir(catalogdir)]
+# ret = {'foo': False}
 
-current_catalogimg = [None, None]
-for el in catalogimg.keys():
-    current_catalogimg += catalogimg[el]
-current_catalogimg += [None, None]
-print(current_catalogimg)
+# def worker(queue):
+#     while True:
+#         ret = queue.get()
+#         ret['foo'] = not ret['foo']
+#         queue.put(ret, block=False)
+#         time.sleep(2)
+
+
+# if __name__ == '__main__':
+#     queue = multiprocessing.Queue()
+#     queue.put(ret, block=False)
+#     p = multiprocessing.Process(target=worker, args=(queue,))
+#     p.start()
+#     while True:
+#         time.sleep(1)
+#         print(queue.get(block=False)) 
+
+
+from random import random
+from time import sleep
+from multiprocessing import Value
+from multiprocessing import Process
+ 
+def task(variable):
+    while True:
+        variable.value += 1
+        sleep(1)
+ 
+if __name__ == '__main__':
+    variable = Value('f', 0.0)
+    process = Process(target=task, args=(variable,))
+    process.start()
+    while True:
+        print(f'Returned: {variable.value}')
+        sleep(2)

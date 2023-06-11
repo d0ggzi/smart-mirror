@@ -23,10 +23,6 @@ class GalleryWindow(QtWidgets.QMainWindow):
         self.init_UI()
         self.opened = True
 
-        self.thread = thread
-        self.thread.get_xy_signal.connect(self.get_x_y)
-        self.thread.start()
-
     def init_UI(self):
         self.display_width = 1920
         self.display_height = 1080

@@ -12,7 +12,7 @@ pyautogui.FAILSAFE = False
 
 
 class CatalogWindow(QtWidgets.QMainWindow):
-    def __init__(self, thread):
+    def __init__(self):
         super(CatalogWindow, self).__init__()
 
         self.currentimg = 0
@@ -22,10 +22,6 @@ class CatalogWindow(QtWidgets.QMainWindow):
         self.times_for_pressed = 25
         self.init_UI()
         self.opened = True
-
-        self.thread = thread
-        self.thread.get_xy_signal.connect(self.get_x_y)
-        self.thread.start()
 
     def init_UI(self):
         self.display_width = 1920

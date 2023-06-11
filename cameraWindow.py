@@ -23,6 +23,7 @@ class CameraWindow(QtWidgets.QMainWindow):
         self.timer = QTimer()
         self.opened = True
         self.thread = thread
+        self.ui.camera_label.setScaledContents(True)
         # connect its signal to the update_image slot
         self.thread.change_pixmap_signal.connect(self.update_image)
         self.thread.get_xy_signal.connect(self.get_x_y)
@@ -52,7 +53,7 @@ class CameraWindow(QtWidgets.QMainWindow):
 
     def init_images(self, filter=None):
         catalogmaindir = "img/catalog"
-        self.labels = [self.ui.label_2, self.ui.label_3, self.ui.label_4, self.ui.label_5, self.ui.label_6]
+        self.labels = [self.ui.label, self.ui.label_2, self.ui.label_3, self.ui.label_4, self.ui.label_5, self.ui.label_6, self.ui.label_7]
         catalogdirs = [os.path.join(catalogmaindir, f) for f in os.listdir(catalogmaindir)]
         catalogimg = dict()
         for catalogdir in catalogdirs:
@@ -66,8 +67,8 @@ class CameraWindow(QtWidgets.QMainWindow):
         current_catalogimg += [None, None]
 
         if self.currentimg < 0: self.currentimg = 0
-        elif self.currentimg > len(current_catalogimg) - 5: self.currentimg -= 1
-        for index in range(self.currentimg, self.currentimg + 5):
+        elif self.currentimg > len(current_catalogimg) - 7: self.currentimg -= 1
+        for index in range(self.currentimg, self.currentimg + 7):
             current_label = self.labels[index - self.currentimg]
             if current_catalogimg[index] is not None:
                 pixmap = QPixmap(current_catalogimg[index])
@@ -108,11 +109,11 @@ class CameraWindow(QtWidgets.QMainWindow):
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
-        self.cv_img = cv_img
+        self.cv_img  = cv2.rotate(cv_img, cv2.ROTATE_90_CLOCKWISE)
         qt_img = self.convert_cv_qt()
-        self.ui.label.setPixmap(qt_img)
+        self.ui.camera_label.setPixmap(qt_img)
 
-        self.ui.label_7.setText(str(abs(round(self.timer.remainingTime()/1000, 1))))
+        self.ui.time_label.setText(str(abs(round(self.timer.remainingTime()/1000, 1))))
 
 
     def convert_cv_qt(self):
