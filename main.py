@@ -1,13 +1,19 @@
 from PyQt5 import QtWidgets
-import sys
 from cameraWindow import CameraWindow
 from gestures import Gestures
+from multiprocessing import Process, Queue
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
-    gestures = Gestures()
-    application = CameraWindow(gestures)
-    application.show()
-    
-    sys.exit(app.exec())
+    with Gestures() as gestures:
+        queue = Queue()
+        p = Process(target=gestures.run, args=(queue,))
+        p.start()
+
+        application = CameraWindow(queue)
+        application.show()
+        
+        if not app.exec():
+            p.kill()
+            exit()
