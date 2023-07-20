@@ -11,7 +11,7 @@ if __name__ == "__main__":
         p = Process(target=gestures.run, args=(queue,))
         p.start()
 
-        application = CameraWindow(queue)
+        application = CameraWindow(queue, {'photo_taken': 0, 'card': []})
         application.show()
         
         if not app.exec():

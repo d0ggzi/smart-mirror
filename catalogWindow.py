@@ -12,7 +12,7 @@ pyautogui.FAILSAFE = False
 
 
 class CatalogWindow(QtWidgets.QMainWindow):
-    def __init__(self, queue):
+    def __init__(self, queue, state):
         super(CatalogWindow, self).__init__()
 
         self.currentimg = 0
@@ -21,6 +21,7 @@ class CatalogWindow(QtWidgets.QMainWindow):
 
         self.init_UI()
         self.queue = queue
+        self.state = state
 
     def init_UI(self):
         self.display_width = 1920
@@ -44,24 +45,26 @@ class CatalogWindow(QtWidgets.QMainWindow):
                 current_catalogimg += catalogimg[el]
 
         for index, img in enumerate(current_catalogimg):
-            pixmap = QPixmap(img)
-            text, price = img.split(os.sep)[-1].split('_')
-            price = price.split('.')[0]
-            item_widget = ItemWidget(pixmap, text, price)
+            item_widget = ItemWidget(img)
             self.ui.gridLayout_3.addWidget(item_widget, index//2, index%2)
+            item_widget.to_card_signal.connect(self.to_card)
 
 
     def open_camera(self):
         from cameraWindow import CameraWindow
-        self.cameraWindow = CameraWindow(self.queue)
+        self.cameraWindow = CameraWindow(self.queue, self.state)
         self.cameraWindow.show()
         self.close()
 
     def open_card(self):
         from cardWindow import CardWindow
-        self.cardWindow = CardWindow(self.queue)
+        self.cardWindow = CardWindow(self.queue, self.state)
         self.cardWindow.show()
         self.close()
+
+    def to_card(self, img):
+        self.state['card'].append(img)
+
 
     def closeEvent(self, event):
         event.accept()

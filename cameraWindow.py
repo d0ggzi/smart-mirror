@@ -8,14 +8,17 @@ import numpy as np
 from ui.mainWindowUI import Ui_MainWindow
 from PIL import Image
 from datetime import datetime
+from cvfpscalc import CvFpsCalc
 
 
 class CameraWindow(QtWidgets.QMainWindow):
-    def __init__(self, queue):
+    def __init__(self, queue, state):
         super(CameraWindow, self).__init__()
+        self.state = state
+        self.current_clothes = ''
 
         self.currentimg = 3
-        self.photo_taken = 0
+        # self.cvfpscalc = CvFpsCalc(buffer_len=10)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.init_UI()
@@ -23,6 +26,7 @@ class CameraWindow(QtWidgets.QMainWindow):
         self.timer = QTimer()
         self.opened = True
         self.queue = queue
+        
         self.ui.camera_label.setScaledContents(True)
         # connect its signal to the update_image slot
         # start the thread
@@ -36,10 +40,10 @@ class CameraWindow(QtWidgets.QMainWindow):
         self.display_height = 960
         self.setWindowTitle('Умное зеркало')
         self.init_images()
-        self.ui.label_8.setText(str(self.photo_taken))
+        self.ui.label_8.setText(str(self.state['photo_taken']))
 
         self.ui.galleryButton.clicked.connect(self.gallery)
-        # self.ui.card_pushButton.clicked.connect(self.add_to_card)
+        self.ui.card_pushButton.clicked.connect(self.add_to_card)
         self.ui.catalogButton.clicked.connect(self.catalog)
         self.ui.rightButton.clicked.connect(self.right)
         self.ui.leftButton.clicked.connect(self.left)
@@ -71,26 +75,8 @@ class CameraWindow(QtWidgets.QMainWindow):
                 current_label.setScaledContents(True)
             else:
                 current_label.clear()
-
-
-
-    # def get_x_y(self, coord_x, coord_y):
-    #     if self.opened:
-    #         coord_x = abs(coord_x - 640)
-    #         coord_x *= self.display_width / 640 
-    #         coord_y *= self.display_height / 480
-
-    #         button = self.get_button_pressed(coord_x, coord_y)
-    #         if button is not None:
-    #             self.button_pressed['name'] = button
-    #             self.button_pressed['times'] += 1
-    #             if self.button_pressed['times'] % self.times_for_pressed == 0:
-    #                 button[4]()
-    #         else:
-    #             self.button_pressed = {
-    #                 "name": "",
-    #                 "times": 0,
-    #             }
+        self.current_clothes = current_catalogimg[self.currentimg + 4]
+        print(self.current_clothes)
 
     def get_gesture(self, gesture):
         if gesture == "peace":
@@ -104,17 +90,18 @@ class CameraWindow(QtWidgets.QMainWindow):
             while not self.queue.empty():
                 cv_img = self.queue.get_nowait()
                 self.cv_img  = cv2.rotate(cv_img, cv2.ROTATE_90_CLOCKWISE)
-                qt_img = self.convert_cv_qt()
-                self.ui.camera_label.setPixmap(qt_img)
+                self.qt_img = self.convert_cv_qt(self.cv_img)
+                self.ui.camera_label.setPixmap(self.qt_img)
+                # print(self.cvfpscalc.get())
 
                 self.ui.time_label.setText(str(abs(round(self.timer.remainingTime()/1000, 1))))
         except:
             pass
 
 
-    def convert_cv_qt(self):
+    def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
-        rgb_image = cv2.cvtColor(self.cv_img, cv2.COLOR_BGR2RGB)
+        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_image.shape
         bytes_per_line = ch * w
         convert_to_Qt_format = QtGui.QImage(rgb_image.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
@@ -129,8 +116,11 @@ class CameraWindow(QtWidgets.QMainWindow):
         im_pil.save(f'img/gallery/{img_name}')
 
         self.timer.stop()
-        self.photo_taken += 1
-        self.ui.label_8.setText(str(self.photo_taken))
+        self.state['photo_taken'] += 1
+        self.ui.label_8.setText(str(self.state['photo_taken']))
+
+        # self.do_AI_things()
+        self.show_photo()
 
     def get_button_pressed(self, coord_x, coord_y):
         for rect in self.buttons:
@@ -141,6 +131,13 @@ class CameraWindow(QtWidgets.QMainWindow):
                 if (y1 < y and y < y2):
                     return rect
         return None
+    
+
+    def add_to_card(self):
+        print(self.current_clothes)
+        self.state['card'].append(self.current_clothes)
+        print(self.state)
+
 
     def back(self):
         print("back pressed")
@@ -161,20 +158,26 @@ class CameraWindow(QtWidgets.QMainWindow):
             self.timer.setInterval(5000)
             self.timer.timeout.connect(self.save_photo)
             self.timer.start()
-            # self.do_AI_things()
-            # self.show_photo()
+            
+
+    def show_photo(self):
+        from showWindow import ShowWindow
+        print("catalog pressed")
+        self.catalog_window = ShowWindow(self.queue, self.qt_img, self.state)
+        self.catalog_window.show()
+        self.close()
 
     def catalog(self):
         from catalogWindow import CatalogWindow
         print("catalog pressed")
-        self.catalog_window = CatalogWindow(self.queue)
+        self.catalog_window = CatalogWindow(self.queue, self.state)
         self.catalog_window.show()
         self.close()
 
     def gallery(self):
         from galleryWindow import GalleryWindow
         print("gallery pressed")
-        self.catalog_window = GalleryWindow(self.queue)
+        self.catalog_window = GalleryWindow(self.queue, self.state)
         self.catalog_window.show()
         self.close()
 
