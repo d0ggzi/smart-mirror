@@ -9,7 +9,7 @@ from itemWidget import ItemWidget
 
 
 class ShowWindow(QtWidgets.QMainWindow):
-    def __init__(self, queue, photo, state):
+    def __init__(self, queue, photo, state, current_clothes):
         super(ShowWindow, self).__init__()
 
         self.currentimg = 0
@@ -21,6 +21,7 @@ class ShowWindow(QtWidgets.QMainWindow):
 
         self.queue = queue
         self.state = state
+        self.current_clothes = current_clothes
 
     def init_UI(self):
         self.display_width = 1920
@@ -28,7 +29,11 @@ class ShowWindow(QtWidgets.QMainWindow):
         self.setWindowTitle('Показ фото')
         self.ui.back_pushButton.clicked.connect(self.open_camera)
         self.ui.card_pushButton.clicked.connect(self.open_card)
+        self.ui.to_card_pushButton.clicked.connect(self.to_card)
         self.ui.label.setPixmap(self.photo)
+
+    def to_card(self):
+        self.state['card'].append(self.current_clothes)
 
     # def init_card_items(self):
     #     catalogdir = "img/catalog"
@@ -45,6 +50,7 @@ class ShowWindow(QtWidgets.QMainWindow):
 
     def open_camera(self):
         from cameraWindow import CameraWindow
+        print("clicked to open camera window")
         self.cameraWindow = CameraWindow(self.queue, self.state)
         self.cameraWindow.show()
         self.close()

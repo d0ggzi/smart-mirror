@@ -16,6 +16,7 @@ class ItemWidget(QWidget):
         self.img = img
         self.img_show = QPixmap(img)
         try:
+            img = img.replace('#', os.sep)
             self.name, price = img.split(os.sep)[-1].split('_')
             self.price = price.split('.')[0]
         except:

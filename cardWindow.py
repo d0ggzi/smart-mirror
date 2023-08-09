@@ -32,15 +32,22 @@ class CardWindow(QtWidgets.QMainWindow):
 
     def init_card_items(self):
         current_catalogimg = self.state['card']
-        print(current_catalogimg)
-        print(self.state)
+        # print(self.state)
+        all_price = 0
 
         for index, img in enumerate(current_catalogimg):
             pixmap = QPixmap(img)
             text, price = img.split(os.sep)[-1].split('_')
             price = price.split('.')[0]
+            all_price += int(price)
             item_widget = CardItemWidget(pixmap, text, price)
             self.ui.verticalLayout_3.addWidget(item_widget)
+
+        self.ui.label.setText(str(len(self.state['card'])))
+        self.ui.label_7.setText(str(all_price))
+        self.ui.label_8.setText('0')
+        self.ui.label_9.setText(str(all_price))
+
 
     def open_camera(self):
         from cameraWindow import CameraWindow

@@ -41,9 +41,13 @@ class GalleryWindow(QtWidgets.QMainWindow):
         for index, img in enumerate(Galleryimg):
             item_widget = ItemWidget(img)
             self.ui.gridLayout_3.addWidget(item_widget, index//2, index%2)
+            item_widget.to_card_signal.connect(self.to_card)
             # if index == 1:
             #     break
             
+    def to_card(self, img):
+        img = img.split('&')[1]
+        self.state['card'].append(img)
             
 
     def open_camera(self):
